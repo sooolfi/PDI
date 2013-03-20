@@ -19,6 +19,103 @@ using namespace cimg_library;
         img.draw_circle(size/2,size/2,radius,colorCircle,1);
         return img;        
         }
+ 
+ //Funcion Ej7
+ CImg<unsigned char> halftoning(CImg<unsigned char> img){
+     
+        bool class0[3][3]={{0,0,0},{0,0,0},{0,0,0}};     	
+	bool class1[3][3]={{0,1,0},{0,0,0},{0,0,0}};
+	bool class2[3][3]={{0,1,0},{0,0,0},{0,0,1}};
+	bool class3[3][3]={{1,1,0},{0,0,0},{0,0,1}};
+	bool class4[3][3]={{1,1,0},{0,0,0},{1,0,1}};
+	bool class5[3][3]={{1,1,1},{0,0,0},{1,0,1}};
+	bool class6[3][3]={{1,1,1},{0,0,1},{1,0,1}};
+	bool class7[3][3]={{1,1,1},{0,0,1},{1,1,1}};
+	bool class8[3][3]={{1,1,1},{1,0,1},{1,1,1}};
+	bool class9[3][3]={{1,1,1},{1,1,1},{1,1,1}};
+               
+     //creamos una nueva imagen con 10 tonos, 3 veces mas grande que la original
+     int width = img.width();
+     int height = img.height();
+     
+     CImg<bool> halftoningImg(3*width,3*height);
+     int clase;
+     cimg_forXY(img,x,y){
+         //escalamos  0 a 255 , 256/10 clases son 25,6 
+         clase = img(x,y)/25;         
+         
+         switch ((int)clase){
+             case 0:{
+                 for(int i=0;i<3;i++)
+                     for(int j=0;j<3;j++)
+                        halftoningImg(3*x+i,3*y+j) = class0[i][j];                              
+                 break;
+             }
+             case 1:{
+                 for(int i=0;i<3;i++)
+                     for(int j=0;j<3;j++)
+                        halftoningImg(3*x+i,3*y+j) = class1[i][j];                              
+                 break;
+             }
+             case 2:{
+                 for(int i=0;i<3;i++)
+                     for(int j=0;j<3;j++)
+                        halftoningImg(3*x+i,3*y+j) = class2[i][j];                              
+                 break;
+             }
+             case 3:{
+                 for(int i=0;i<3;i++)
+                     for(int j=0;j<3;j++)
+                        halftoningImg(3*x+i,3*y+j) = class3[i][j];                              
+                 break;
+             }
+             case 4:{
+                 for(int i=0;i<3;i++)
+                     for(int j=0;j<3;j++)
+                        halftoningImg(3*x+i,3*y+j) = class4[i][j];                              
+                 break;
+             }
+             case 5:{
+                 for(int i=0;i<3;i++)
+                     for(int j=0;j<3;j++)
+                        halftoningImg(3*x+i,3*y+j) = class5[i][j];                              
+                 break;
+             }
+             case 6:{
+                 for(int i=0;i<3;i++)
+                     for(int j=0;j<3;j++)
+                        halftoningImg(3*x+i,3*y+j) = class6[i][j];                              
+                 break;
+             }
+             case 7:{
+                 for(int i=0;i<3;i++)
+                     for(int j=0;j<3;j++)
+                        halftoningImg(3*x+i,3*y+j) = class7[i][j];                              
+                 break;
+             }
+             case 8:{
+                 for(int i=0;i<3;i++)
+                     for(int j=0;j<3;j++)
+                        halftoningImg(3*x+i,3*y+j) = class8[i][j];                              
+                 break;
+             }
+             case 9:{
+                 for(int i=0;i<3;i++)
+                     for(int j=0;j<3;j++)
+                        halftoningImg(3*x+i,3*y+j) = class9[i][j];                              
+                 break;
+             }
+         }
+         
+     }
+     return halftoningImg;
+             //.resize(halftoningImg.width()/3,halftoningImg.height()/3,1,1,1);
+     
+ 
+ 
+ }
+
+ 
 
 int main(int argc, char *argv[]) {
     
@@ -39,8 +136,7 @@ int main(int argc, char *argv[]) {
         
         case 1:{   //Ejercicio 1                           
 	const char* filename = cimg_option("-i","/home/guido/NetBeansProjects/TP1/images/cameraman.tif","Image file\n");
-	CImg<unsigned char> img1(filename); //Carga de disco
-        
+	CImg<unsigned char> img1(filename); //Carga de disco        
 	//corta y pega en imagen 2
 	CImg<unsigned char> img2(img1);
 	img2.crop(85,35,145,95);
@@ -240,7 +336,13 @@ int main(int argc, char *argv[]) {
         }
         case 7: {//Ejercicio 7
             
-            
+        const char* filename = cimg_option("-i","/home/guido/NetBeansProjects/TP1/images/huang2.jpg","Image file\n");    
+        CImg<unsigned char> img(filename);
+        
+        CImg<bool> imgH = halftoning(img);
+        CImgDisplay vent;
+        imgH.display(vent);
+        while(!vent.is_closed()){}      
         break;
             
         }        
