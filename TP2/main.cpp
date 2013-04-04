@@ -8,6 +8,8 @@
 #include <CImg.h>
 #include <iostream>
 #include <stdio.h>
+#include <vector>
+#include <cmath>
 
 using namespace std;
 using namespace cimg_library;
@@ -76,20 +78,17 @@ CImg<int> lut_tramos(float x1,float y1, float x2, float y2){
  return lut_tramos;
 }
 
-CImg<float> lut_log(CImg<float> imag,float c){
-	CImg<float> imag_normal=imag.get_normalize(0,1);
-	CImg<float> imag2(imag.width(),imag.height(),imag.depth(),imag.spectrum());
-	cimg_forXYC(imag,x,y,v) {
-		//std::cout<<imag_normal(x,y,0,v)<<std::endl;
-		imag2(x,y,0,v)=c*log(imag_normal(x,y,0,v)+1);
-		if(imag2(x,y,0,v)>1)
-			imag2(x,y,0,v)=1;
-		else 
-			if(imag2(x,y,0,v)<0)
-				imag2(x,y,0,v)=0;
-	}
-	return imag2;//imag2.normalize(0,255);
-}
+CImg<float> cimg_log(CImg<float> r, float c){
+  CImg<float> s(r.width(), r.height(), r.depth(), r.spectrum());
+  cimg_forXYC(r, x, y, v){
+    s(x, y, 0, v) = c * log( 1 + r(x, y, 0, v));
+    if ( s(x, y, 0, v) > 1 )
+       s(x, y, 0, v) = 1;
+    else if ( s(x, y, 0, v) < 0 )
+       s(x, y, 0, v) = 0;
+  }
+  return s;
+} 
 
 CImg<double> lut_potencia(CImg<double> imag,double gamma,double c=1){
 	CImg<double> imag_normal=imag.get_normalize(0,1);
@@ -302,7 +301,7 @@ int main(int argc, char** argv) {
         CImg<float> img("/home/guido/NetBeansProjects/TP2/images/rmn.jpg");
 	CImg<float> img_log(img.width(),img.height(),img.depth(),img.spectrum());
 	CImg<float> img_pot(img.width(),img.height(),img.depth(),img.spectrum());
-        img_log=lut_log(img,2);
+        img_log=cimg_log(img,2);
 	img_pot=lut_potencia(img,2,1);
 	CImgDisplay ventana1,ventana2,ventana3;
         ventana1.display(img);
@@ -346,17 +345,94 @@ int main(int argc, char** argv) {
         
         
         case 7: {//Ejercicio 7        
-            //7a 
+            cout<< "Ingrese opción:"<<endl;
+            cout<< "1-Ejercicio-7a"<<endl;
+            cout<< "2-Ejercicio-7b"<<endl;
+            cout<< "3-Ejercicio-7c"<<endl;
+            int opcion;
+            cin>>opcion;
+            
+            switch(opcion){
+           
+            case(1):{//7a 
+            
             CImg<unsigned char> img("/home/guido/NetBeansProjects/TP2/images/earth.bmp");                       
             CImgDisplay ventana;                                
-            CImg<bool> imgN=binarize(img,200,false);
-            
-            
-            
-            imgN.display(ventana);
-            
+            CImg<float> imgN=cimg_log(img,0.2);                                    
+            imgN.display(ventana);            
             while (!ventana.is_closed()){};
-            break;        
+            break;}
+            
+            case(2):{//7b
+                        
+            CImg<unsigned char> a7v600_X("/home/guido/NetBeansProjects/TP2/images/a7v600-X.gif");
+            CImg<unsigned char> a7v600_SE("/home/guido/NetBeansProjects/TP2/images/a7v600-SE.gif");
+            
+            CImg<unsigned char> a7v600_X_Ruido("/home/guido/NetBeansProjects/TP2/images/a7v600-X(RImpulsivo).gif");
+            CImg<unsigned char> a7v600_SE_Ruido("/home/guido/NetBeansProjects/TP2/images/a7v600-SE(RImpulsivo).gif");
+
+            
+            break;}
+            
+            case(3):{//7c
+                
+              //probar normalizando la imagen y detectar si es blanco o negro en el centro...
+                
+              CImg<unsigned char> blister_completo("/home/guido/NetBeansProjects/TP2/images/blister_completo.jpg");
+              CImg<unsigned char> blister_incompleto("/home/guido/NetBeansProjects/TP2/images/blister_incompleto_2.jpg");
+
+              int positions[10][4] = {
+                {38, 39, 68, 69},
+                {87, 39, 117, 69},
+                {138, 39, 168, 69},
+                {188, 39, 218, 69},
+                {237, 39, 267, 69},// 5
+                {38, 86, 68, 116},
+                {87, 86, 117, 116},
+                {138, 86, 168, 116},
+                {188, 86, 218, 116},
+                {237, 86, 267, 116}
+              };
+
+              float mean = 0;
+             // float tolerance = 0;
+              for(int i=0; i<10; i++){
+                CImg<unsigned char> aux = blister_completo;
+                aux.crop(positions[i][0],positions[i][1],positions[i][2],positions[i][3]);
+                mean += aux.mean();
+                //tolerance += sqrt(aux.variance());
+              }
+              mean /= 10;
+              // tolerance /= 10;
+
+              float tolerance = 20;
+              vector<int> pos_sin_pastillas;
+              for(int i=0; i<10; i++){
+                CImg<unsigned char> aux = blister_incompleto;
+                aux.crop(positions[i][0],positions[i][1],positions[i][2],positions[i][3]);
+                float current_mean = aux.mean();
+                if(abs(mean - current_mean) > tolerance )
+                  pos_sin_pastillas.push_back(i);
+              }
+
+              for(int i=0; i < pos_sin_pastillas.size(); i++){
+                cout << endl;
+                cout << "There is not 'pastilla' on: " << pos_sin_pastillas[i];
+                cout << endl;
+              }
+
+              CImgDisplay ventana(blister_completo, "Blister Completo");
+              CImgDisplay ventana_2(blister_incompleto, "Blister Incompleto");
+
+              while (!ventana.is_closed() && !ventana.is_keyQ()) {}
+
+                
+            break;}
+            
+        
+            }
+        
+        
         }
      }
     
